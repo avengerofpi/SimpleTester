@@ -3,6 +3,7 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -23,28 +24,75 @@ public class simpleTester {
         
         // Variables for interacting with the testing list(s)
         int size;
+        int index;
         int randIndex;
+        int numPropsFiles;
         String state, capital;
         String repeat;
+        String errorMsg;
 
         // Choose the properties file to use for the test
+        File propsFile = null;
         String propsFileName;
-        propsFileName = "/home/cory/git/stateCapitals/stateCapitals.props";
-        propsFileName = "/home/cory/git/stateCapitals/countryCapitals.props";
+        String propsFileDirName = "/home/cory/git/stateCapitals";
+        FilenameFilter propsFileNameFilter = new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) { return name.matches(".*\\.props"); }
+        };
+        //propsFileName = "/home/cory/git/stateCapitals/stateCapitals.props";
+        //propsFileName = "/home/cory/git/stateCapitals/countryCapitals.props";
+
+        // Make sure the chosen directory for test property files exists
+        File propsFileDir = new File(propsFileDirName);
+        if (!(propsFileDir.exists() && propsFileDir.isDirectory())) {
+            errorMsg = "ERROR: The chosen properties directory does not exist or is not a directory: " + propsFileDirName;
+            System.out.println(errorMsg);
+            System.exit(0);
+        }
+        
+        // Choose how to interact with the user (e.g., using java.util.Scanner)
+        // This will need to be closed!
+        Scanner reader = new Scanner(System.in);
+        
+        // Grab the list of properties files from the chosen directory
+        File[] propsFileNameList = propsFileDir.listFiles(propsFileNameFilter);
+
+        // If there were no property files, exit. If just one property file, use it. Otherwise, ask user to choose.
+        if ( (propsFileNameList == null) || ((numPropsFiles = propsFileNameList.length) < 1) ) {
+            errorMsg = "ERROR: No property files found in the chosen directory: " + propsFileDirName;
+            System.out.println(errorMsg);
+            reader.close();
+            System.exit(0);
+        } else if (numPropsFiles == 1) {
+            propsFile = propsFileNameList[0];
+        } else {
+            // Ask user to choose
+            System.out.println("There are multiple property files to choose from...");
+            for (int i=0; i<numPropsFiles; i++) {
+                File file = propsFileNameList[i];
+                String filename = file.getName();
+                System.out.println((i+1) + ": " + filename);
+            }
+            System.out.print("Choose the number for the test you want to take (defaults to 1): ");
+            if (reader.hasNextInt()) {
+                index = reader.nextInt();
+                reader.nextLine(); // skip the remainder of the current input line (including the newline char)
+            } else
+                index = 1;
+            if (index < 1 || index > numPropsFiles)
+                index = 1;
+            propsFile = propsFileNameList[index-1];
+        }
         
         // Make sure the chosen test property file exists
-        File propsFile = new File(propsFileName);
+        propsFileName = propsFile.getName();
         if (!propsFile.exists()) {
-            String errorMsg = "ERROR: Could not find the chosen properties file: " + propsFileName;
+            errorMsg = "ERROR: Could not find the chosen properties file: " + propsFileName;
             System.out.println(errorMsg);
-            int ignoreMe = System.in.read();
-            System.out.println("" + ignoreMe);
+            reader.close();
             System.exit(0);
         }
 
-        // Choose how to interact with the user (e.g., using java.util.Scanner)
-        Scanner reader = new Scanner(System.in);
-        
         // Import the test property file and declare/initialize some useful lists
         Properties stateCapitalsProps = new Properties();
         stateCapitalsProps.load(new FileInputStream(propsFile));
@@ -68,6 +116,7 @@ public class simpleTester {
                 System.out.print("How large a list do you want (will default to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ");
                 try {
                     testSize = reader.nextInt();
+                    reader.nextLine(); // skip the remainder of the current input line (including the newline char)
                     if ( (testSize < 1) || (testSize > originalFullTestSize) )
                         testSize = DEFAULT_TEST_SIZE_MAX;
                 } catch (InputMismatchException e) {
@@ -77,7 +126,7 @@ public class simpleTester {
         }
 
         // Make sure testSize is valid
-        String errorMsg = "Somehow an invalid testSize (" + testSize + ") has been selected. Should be in the range 1.." + originalFullTestSize;
+        errorMsg = "Somehow an invalid testSize (" + testSize + ") has been selected. Should be in the range 1.." + originalFullTestSize;
         assert ( (testSize >= 1) && (testSize <= originalFullTestSize) ) : errorMsg;
 
         // Grab random entries to test if not testing the whole set

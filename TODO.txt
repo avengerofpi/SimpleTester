@@ -1,0 +1,29 @@
+Add properties files mapping...
+  state <--> order of entry to the Union
+  element <--> atomic number
+  counyry -> continent
+  continent specific versions of:
+    coutry <--> capital
+  car model -> car make
+
+Add new types of tests
+  true/false
+  multiple choice
+
+Add ability to declare extra details about properties files
+  Something like <filename>.props  <-- <filename>.props.config
+  The config file might contain...
+    A description of the concepts/mapping to be tested
+    Type of exam
+      This would probably be better encoded in the filename, something
+        exam.map.props vs exam.truefalse.props vs exam.multiChoice.props
+
+Add README.md
+
+Add GUI
+
+Add user accounts
+
+Add tracking of results
+  Over repeating testing within a session
+  Over time/multiple sessions

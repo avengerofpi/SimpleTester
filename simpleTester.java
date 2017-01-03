@@ -6,10 +6,12 @@ import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.InputMismatchException;
+import java.util.Collections;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -26,7 +28,7 @@ public class simpleTester {
         int size;
         int index;
         int randIndex;
-        int numPropsFiles;
+        int numPropsFiles = 0;
         String state, capital;
         String repeat;
         String errorMsg;
@@ -55,23 +57,29 @@ public class simpleTester {
         Scanner reader = new Scanner(System.in);
         
         // Grab the list of properties files from the chosen directory
-        File[] propsFileNameList = propsFileDir.listFiles(propsFileNameFilter);
-
+        File[] propsFileList = propsFileDir.listFiles(propsFileNameFilter);
         // If there were no property files, exit. If just one property file, use it. Otherwise, ask user to choose.
-        if ( (propsFileNameList == null) || ((numPropsFiles = propsFileNameList.length) < 1) ) {
+        if ( (propsFileList == null) || ((numPropsFiles = propsFileList.length) < 1) ) {
             errorMsg = "ERROR: No property files found in the chosen directory: " + propsFileDirName;
             System.out.println(errorMsg);
             reader.close();
             System.exit(0);
-        } else if (numPropsFiles == 1) {
-            propsFile = propsFileNameList[0];
+        }
+
+        // Create a sorted version of the props files
+        ArrayList<File> propsFileArrayList = new ArrayList<File>(Arrays.asList(propsFileList));
+        Collections.sort(propsFileArrayList);
+
+        // If there were no property files, exit. If just one property file, use it. Otherwise, ask user to choose.
+        if (numPropsFiles == 1) {
+            propsFile = propsFileArrayList.get(0);
         } else {
             // Ask user to choose
             System.out.println("There are multiple property files to choose from...");
             for (int i=0; i<numPropsFiles; i++) {
-                File file = propsFileNameList[i];
+                File file = propsFileArrayList.get(i);
                 String filename = file.getName();
-                System.out.println((i+1) + ": " + filename);
+                System.out.println("  " + (i+1) + ": " + filename);
             }
             System.out.print("Choose the number for the test you want to take (defaults to 1): ");
             if (reader.hasNextInt()) {
@@ -81,7 +89,7 @@ public class simpleTester {
                 index = 1;
             if (index < 1 || index > numPropsFiles)
                 index = 1;
-            propsFile = propsFileNameList[index-1];
+            propsFile = propsFileArrayList.get(index-1);
         }
         
         // Make sure the chosen test property file exists
@@ -146,17 +154,20 @@ public class simpleTester {
         do {
         failureList = new ArrayList<String>(trimmedFailureList);
         while ( (failureList != null) && (size = failureList.size()) > 0) {
+            System.out.println("Remaining answers set:");
+            HelperFunctions.printValues(failureList, stateCapitalsProps);
+                
             statesThisRound = new ArrayList<>(failureList);
             while (size>0) {
                 randIndex = rand.nextInt(size);
                 state = statesThisRound.remove(randIndex);
                 capital = stateCapitalsProps.getProperty(state);
     
-                System.out.println("State:   " + state);
-                System.out.print("Capital: ");
+                System.out.println("State:     " + state);
+                System.out.print("Capital:   ");
                 String guess = reader.nextLine();
                 if (!guess.toLowerCase().equals(capital.toLowerCase()))
-                    System.out.println("Incorrect: " + capital);
+                    System.out.println("Incorrect: " + capital.toUpperCase());
                 else {
                     failureList.remove(state);
                     successList.add(state);
@@ -175,11 +186,60 @@ public class simpleTester {
             }
         }
             System.out.println("Do you want to repeat this exam?");
-            System.out.print("  yes or no (will default to no): ");
+            System.out.print("  yes or no (will default to yes): ");
             repeat = reader.nextLine();
-        } while (repeat.toLowerCase().equals("yes"));
+        } while (!repeat.toLowerCase().equals("no"));
         
         reader.close();
     }
 
+}
+
+class HelperFunctions {
+    public static void printValues(ArrayList<String> keyList, Properties props) {
+      /**
+       * Given a list of keys and a Properties object cover AT LEAST all the keys
+       * from the other object (possibly more than that), print out the values
+       * from the Properties object corresponding the keys contained within the key
+       * list. No test against duplication of values or keys is performed.
+       **/
+        int MAX_LINE_WIDTH = 110;
+        int MIN_BUFFER = 2;
+        String MIN_BUFFER_STR = repeatString(" ", MIN_BUFFER);
+        int numValues = keyList.size();
+        int numValuesPerLine;
+        int maxValueWidth=0;
+        int posInLine = 0;
+        ArrayList<String> valueList = new ArrayList<>();
+
+        for ( String key : keyList )
+            valueList.add(props.getProperty(key));
+
+        for ( String value : valueList )
+            maxValueWidth = max(maxValueWidth, value.length());
+
+        numValuesPerLine = (MAX_LINE_WIDTH-MIN_BUFFER) / (maxValueWidth+2*MIN_BUFFER);
+        numValuesPerLine = max(1, numValuesPerLine);
+
+        System.out.println("Remaining values are...");
+        for ( String value : valueList ) {
+            int bufferLen = maxValueWidth + MIN_BUFFER - value.length();
+            System.out.print(MIN_BUFFER_STR);
+            System.out.print(value);
+            System.out.print(repeatString(" ", bufferLen));
+            posInLine = (posInLine+1) % numValuesPerLine;
+            if (posInLine == 0)
+                System.out.println();
+        }
+        if (posInLine != 0) // Add an extra linebreak unless the last line already added it
+            System.out.println();
+        System.out.println(); // An an extra, extra linebreak
+    }
+
+    public static String repeatString(String str, int n) {
+        StringBuilder ret = new StringBuilder(n);
+        for (int i=0; i<n; i++)
+            ret.append(str);
+        return ret.toString();
+    }
 }

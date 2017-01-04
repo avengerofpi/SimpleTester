@@ -155,7 +155,8 @@ public class simpleTester {
         failureList = new ArrayList<String>(trimmedFailureList);
         while ( (failureList != null) && (size = failureList.size()) > 0) {
             System.out.println("Remaining answers set:");
-            HelperFunctions.printValues(failureList, stateCapitalsProps);
+            HelperFunctions.printStringArrayList(failureList, "prompts");
+            HelperFunctions.printValuesFromArrayList(failureList, stateCapitalsProps);
                 
             statesThisRound = new ArrayList<>(failureList);
             while (size>0) {
@@ -196,36 +197,29 @@ public class simpleTester {
 }
 
 class HelperFunctions {
-    public static void printValues(ArrayList<String> keyList, Properties props) {
+    public static void printStringArrayList(ArrayList<String> list, String label) {
       /**
-       * Given a list of keys and a Properties object cover AT LEAST all the keys
-       * from the other object (possibly more than that), print out the values
-       * from the Properties object corresponding the keys contained within the key
-       * list. No test against duplication of values or keys is performed.
+       * Give an ArrayList<String> object, print out all entries formatted into columns.
        **/
         int MAX_LINE_WIDTH = 110;
         int MIN_BUFFER = 2;
         String MIN_BUFFER_STR = repeatString(" ", MIN_BUFFER);
-        int numValues = keyList.size();
+        int n = list.size();
         int numValuesPerLine;
         int maxValueWidth=0;
         int posInLine = 0;
-        ArrayList<String> valueList = new ArrayList<>();
 
-        for ( String key : keyList )
-            valueList.add(props.getProperty(key));
-
-        for ( String value : valueList )
-            maxValueWidth = max(maxValueWidth, value.length());
+        for ( String entry : list )
+            maxValueWidth = max(maxValueWidth, entry.length());
 
         numValuesPerLine = (MAX_LINE_WIDTH-MIN_BUFFER) / (maxValueWidth+2*MIN_BUFFER);
         numValuesPerLine = max(1, numValuesPerLine);
 
-        System.out.println("Remaining values are...");
-        for ( String value : valueList ) {
-            int bufferLen = maxValueWidth + MIN_BUFFER - value.length();
+        System.out.println("Remaining " + label + " are...");
+        for ( String entry : list ) {
+            int bufferLen = maxValueWidth + MIN_BUFFER - entry.length();
             System.out.print(MIN_BUFFER_STR);
-            System.out.print(value);
+            System.out.print(entry);
             System.out.print(repeatString(" ", bufferLen));
             posInLine = (posInLine+1) % numValuesPerLine;
             if (posInLine == 0)
@@ -234,6 +228,21 @@ class HelperFunctions {
         if (posInLine != 0) // Add an extra linebreak unless the last line already added it
             System.out.println();
         System.out.println(); // An an extra, extra linebreak
+    }
+
+    public static void printValuesFromArrayList(ArrayList<String> keyList, Properties props) {
+      /**
+       * Given a list of keys and a Properties object cover AT LEAST all the keys
+       * from the other object (possibly more than that), print out the values
+       * from the Properties object corresponding the keys contained within the key
+       * list. No test against duplication of values or keys is performed.
+       **/
+        ArrayList<String> valueList = new ArrayList<>();
+
+        for ( String key : keyList )
+            valueList.add(props.getProperty(key));
+
+        printStringArrayList(valueList, "values");
     }
 
     public static String repeatString(String str, int n) {

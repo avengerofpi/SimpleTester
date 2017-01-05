@@ -154,7 +154,6 @@ public class simpleTester {
         do {
         failureList = new ArrayList<String>(trimmedFailureList);
         while ( (failureList != null) && (size = failureList.size()) > 0) {
-            System.out.println("Remaining answers set:");
             HelperFunctions.printStringArrayList(failureList, "prompts");
             HelperFunctions.printValuesFromArrayList(failureList, stateCapitalsProps);
                 

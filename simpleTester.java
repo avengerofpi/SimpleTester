@@ -154,7 +154,7 @@ public class simpleTester {
         do {
         failureList = new ArrayList<String>(trimmedFailureList);
         while ( (failureList != null) && (size = failureList.size()) > 0) {
-            HelperFunctions.printStringArrayList(failureList, "prompts");
+            HelperFunctions.printStringArrayListRandom(failureList, "prompts");
             HelperFunctions.printValuesFromArrayList(failureList, stateCapitalsProps);
                 
             statesThisRound = new ArrayList<>(failureList);
@@ -229,6 +229,19 @@ class HelperFunctions {
         System.out.println(); // An an extra, extra linebreak
     }
 
+    public static void printStringArrayListRandom(ArrayList<String> list, String label) {
+        ArrayList<String> localList = new ArrayList<>(list);
+        ArrayList<String> randomizedList = new ArrayList<>();
+        int n = localList.size();
+        int index;
+        Random rand = new Random();
+        for (int i=0; i < n--; /*nothing*/) {
+            index = rand.nextInt(n+1);
+            randomizedList.add(localList.remove(index));
+        }
+        printStringArrayList(randomizedList, label);
+    }
+
     public static void printValuesFromArrayList(ArrayList<String> keyList, Properties props) {
       /**
        * Given a list of keys and a Properties object cover AT LEAST all the keys
@@ -241,7 +254,7 @@ class HelperFunctions {
         for ( String key : keyList )
             valueList.add(props.getProperty(key));
 
-        printStringArrayList(valueList, "values");
+        printStringArrayListRandom(valueList, "values");
     }
 
     public static String repeatString(String str, int n) {

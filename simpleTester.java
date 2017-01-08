@@ -163,8 +163,8 @@ public class simpleTester {
                 state = statesThisRound.remove(randIndex);
                 capital = stateCapitalsProps.getProperty(state);
     
-                System.out.println("State:     " + state);
-                System.out.print("Capital:   ");
+                System.out.println("Prompt:    " + state);
+                System.out.print(  "Guess:     ");
                 String guess = reader.nextLine();
                 if (!guess.toLowerCase().equals(capital.toLowerCase()))
                     System.out.println("Incorrect: " + capital.toUpperCase());

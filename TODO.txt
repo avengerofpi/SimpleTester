@@ -24,3 +24,27 @@ Add user accounts
 Add tracking of results
   Over repeating testing within a session
   Over time/multiple sessions
+
+Object Model ideas:
+  Enum HintOrder = {"random", "sorted", "given"}
+  Enum TestType = {"memorization", "trueFalse", "multipleChoice"}
+  Interface Testable
+    // Fields
+    private Properties mapping;
+    private HintOrder hintOrder;
+    private HintPromptOrder hintPromptOrder;
+    private HintValueOrder hintValueOrder;
+    private TestType testType;
+    private String promptLabel;
+    private String valueLabel;
+    private int testLength;
+    private boolean reportFailureImmediately;
+    private boolean graphicalTest;
+    private boolean textualTest;
+
+    // Methods
+    public void launchTest();
+    public void printHintPrompts;
+    public void printHintValues;
+  Class Test implements Testable
+    // blargh!

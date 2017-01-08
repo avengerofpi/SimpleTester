@@ -36,7 +36,7 @@ public class simpleTester {
         // Choose the properties file to use for the test
         File propsFile = null;
         String propsFileName;
-        String propsFileDirName = "/home/cory/git/stateCapitals";
+        String propsFileDirName = "/home/cory/git/stateCapitals/props";
         FilenameFilter propsFileNameFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) { return name.matches(".*\\.props"); }

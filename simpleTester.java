@@ -226,7 +226,7 @@ class HelperFunctions {
         }
         if (posInLine != 0) // Add an extra linebreak unless the last line already added it
             System.out.println();
-        System.out.println(); // An an extra, extra linebreak
+        System.out.println(); // An an extra, extra linebreak; should be a fully blank line
     }
 
     public static void printStringArrayListRandom(ArrayList<String> list, String label) {
@@ -244,8 +244,8 @@ class HelperFunctions {
 
     public static void printValuesFromArrayList(ArrayList<String> keyList, Properties props) {
       /**
-       * Given a list of keys and a Properties object cover AT LEAST all the keys
-       * from the other object (possibly more than that), print out the values
+       * Given a list of keys and a Properties object covering AT LEAST all the keys
+       * itemized in the list object (possibly more than that), print out the values
        * from the Properties object corresponding the keys contained within the key
        * list. No test against duplication of values or keys is performed.
        **/

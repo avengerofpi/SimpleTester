@@ -1,4 +1,4 @@
-//package stateCapitals;
+//package simpleTester;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,14 +9,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Scanner;
+import java.util.Scanner; // find a better I/O interface
 import java.util.InputMismatchException;
 import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class simpleTester {
-
+    
+    final static String YES_REGEX = "[yY]([eE][sS])?";
+    final static String  NO_REGEX = "[nN][oO]?";
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // Setup a random number generator for later use
         Random rand = new Random();
@@ -30,19 +34,20 @@ public class simpleTester {
         int randIndex;
         int numPropsFiles = 0;
         String state, capital;
-        String repeat;
+        String repeatStr;
         String errorMsg;
+        boolean repeat;
 
         // Choose the properties file to use for the test
         File propsFile = null;
         String propsFileName;
-        String propsFileDirName = "/home/cory/git/stateCapitals/props";
+        String propsFileDirName = "/home/cory/git/simpleTester/props";
         FilenameFilter propsFileNameFilter = new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) { return name.matches(".*\\.props"); }
         };
-        //propsFileName = "/home/cory/git/stateCapitals/stateCapitals.props";
-        //propsFileName = "/home/cory/git/stateCapitals/countryCapitals.props";
+        //propsFileName = "/home/cory/git/simpleTester/simpleTester.props";
+        //propsFileName = "/home/cory/git/simpleTester/countryCapitals.props";
 
         // Make sure the chosen directory for test property files exists
         File propsFileDir = new File(propsFileDirName);
@@ -79,7 +84,8 @@ public class simpleTester {
             for (int i=0; i<numPropsFiles; i++) {
                 File file = propsFileArrayList.get(i);
                 String filename = file.getName();
-                System.out.println("  " + (i+1) + ": " + filename);
+                //System.out.println("  " + (i+1) + ": " + filename);
+                System.out.format("  %2d: %s%n", i+1, filename);
             }
             System.out.print("Choose the number for the test you want to take (defaults to 1): ");
             if (reader.hasNextInt()) {
@@ -90,6 +96,7 @@ public class simpleTester {
             if (index < 1 || index > numPropsFiles)
                 index = 1;
             propsFile = propsFileArrayList.get(index-1);
+            System.out.println(); // Add a blank line
         }
         
         // Make sure the chosen test property file exists
@@ -102,9 +109,9 @@ public class simpleTester {
         }
 
         // Import the test property file and declare/initialize some useful lists
-        Properties stateCapitalsProps = new Properties();
-        stateCapitalsProps.load(new FileInputStream(propsFile));
-        final ArrayList<String> originalFullTestList = new ArrayList<>(stateCapitalsProps.stringPropertyNames());
+        Properties simpleTesterProps = new Properties();
+        simpleTesterProps.load(new FileInputStream(propsFile));
+        final ArrayList<String> originalFullTestList = new ArrayList<>(simpleTesterProps.stringPropertyNames());
         ArrayList<String> fullTestList;
         ArrayList<String> successList = new ArrayList<>();
         ArrayList<String> failureList = new ArrayList<>(originalFullTestList);
@@ -112,16 +119,17 @@ public class simpleTester {
         ArrayList<String> statesThisRound;
         
         // Deciding on test size
-        final int DEFAULT_TEST_SIZE_MAX = 50;
+        final int DEFAULT_TEST_SIZE_MAX = 10;
         final int originalFullTestSize = originalFullTestList.size();
         int testSize = originalFullTestSize;
         if (DEFAULT_TEST_SIZE_MAX < testSize) {
             System.out.println("There are " + testSize + " prompts to test.");
             System.out.println("Do you want to choose a smaller number for this test?");
-            System.out.print("  yes or no (will default to no): ");
+            System.out.print("  Yes or no: ");
             String choice = reader.nextLine();
-            if (choice.toLowerCase().equals("yes")) {
-                System.out.print("How large a list do you want (will default to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ");
+            System.out.println(); // Add a blank line
+            if (!choice.toLowerCase().matches(NO_REGEX)) {
+                System.out.print("How large a list do you want (defaults to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ");
                 try {
                     testSize = reader.nextInt();
                     reader.nextLine(); // skip the remainder of the current input line (including the newline char)
@@ -131,6 +139,7 @@ public class simpleTester {
                     testSize = DEFAULT_TEST_SIZE_MAX;
                 }
             }
+            System.out.println(); // Add a blank line
         }
 
         // Make sure testSize is valid
@@ -150,45 +159,58 @@ public class simpleTester {
         }
         trimmedFailureList = new ArrayList<String>(failureList);
 
-        // The main loop routine
+        // Outer loop
         do {
-        failureList = new ArrayList<String>(trimmedFailureList);
-        while ( (failureList != null) && (size = failureList.size()) > 0) {
-            HelperFunctions.printStringArrayListRandom(failureList, "prompts");
-            HelperFunctions.printValuesFromArrayList(failureList, stateCapitalsProps);
-                
-            statesThisRound = new ArrayList<>(failureList);
-            while (size>0) {
-                randIndex = rand.nextInt(size);
-                state = statesThisRound.remove(randIndex);
-                capital = stateCapitalsProps.getProperty(state);
-    
-                System.out.println("Prompt:    " + state);
-                System.out.print(  "Guess:     ");
-                String guess = reader.nextLine();
-                if (!guess.toLowerCase().equals(capital.toLowerCase()))
-                    System.out.println("Incorrect: " + capital.toUpperCase());
-                else {
-                    failureList.remove(state);
-                    successList.add(state);
+            failureList = new ArrayList<String>(trimmedFailureList);
+            
+            // Inner loop
+            while ( (failureList != null) && (size = failureList.size()) > 0) {
+                HelperFunctions.printStringArrayListRandom(failureList, "prompts");
+                HelperFunctions.printValuesFromArrayList(failureList, simpleTesterProps);
+                    
+                statesThisRound = new ArrayList<>(failureList);
+                while (size>0) {
+                    randIndex = rand.nextInt(size);
+                    state = statesThisRound.remove(randIndex);
+                    capital = simpleTesterProps.getProperty(state);
+        
+                    System.out.println("Prompt:    " + state);
+                    System.out.print(  "Guess:     ");
+                    String guess = reader.nextLine();
+                    //if (!guess.toLowerCase().matches(capital.toLowerCase()))
+                    if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, capital))
+                        System.out.println("Incorrect: " + capital.toUpperCase());
+                    else {
+                        failureList.remove(state);
+                        successList.add(state);
+                    }
+        
+                    System.out.println("");
+                    size--;
                 }
-    
-                System.out.println("");
-                size--;
+                size = failureList.size();
+                if (size>0) {
+                    System.out.format("You have %d prompts left to get correct. Wanna play again?%n", size);
+                    System.out.print("  Yes or no: ");
+                    repeatStr = reader.nextLine();
+                    repeat = !repeatStr.matches(NO_REGEX);
+                    if (!repeat) {
+                        failureList = null;
+                        System.out.println();
+                        System.out.format("Matched '%s': '%s'%n", NO_REGEX, repeatStr);
+                        System.out.println();
+                    }
+                }
             }
-            size = failureList.size();
-            if (size>0) {
-                System.out.println("You have " + size + " prompts left to get correct. Wanna play again?");
-                System.out.print("  yes or no (will default to yes): ");
-                repeat = reader.nextLine();
-                if (repeat.toLowerCase().equals("no"))
-                    failureList = null;
-            }
-        }
             System.out.println("Do you want to repeat this exam?");
-            System.out.print("  yes or no (will default to yes): ");
-            repeat = reader.nextLine();
-        } while (!repeat.toLowerCase().equals("no"));
+            System.out.print("  Yes or no: ");
+            repeatStr = reader.nextLine();
+            repeat = !repeatStr.matches(NO_REGEX);
+
+            if (repeat)
+                System.out.println();
+
+        } while (repeat);
         
         reader.close();
     }
@@ -262,5 +284,37 @@ class HelperFunctions {
         for (int i=0; i<n; i++)
             ret.append(str);
         return ret.toString();
+    }
+
+    public static String keepOnlySpacesAndLetters(String in) {
+        final String UNWANTED_REGEX = "[^ a-zA-Z]";
+        Matcher matcher = Pattern.compile(UNWANTED_REGEX).matcher(in);
+        ArrayList<Integer> indexList = new ArrayList<>();
+        while (matcher.find())
+            indexList.add(0, matcher.regionStart()); // creating index list in reverse order
+        StringBuilder out = new StringBuilder(in);
+        for (int index : indexList)
+            out.deleteCharAt(index);
+        return out.toString();
+    }
+
+    public static boolean checkGuess(String guess, String expected) {
+        return expected.equals(guess);
+    }
+
+    public static boolean checkGuessIgnoreCase(String guess, String expected) {
+        return expected.toLowerCase().equals(guess.toLowerCase());
+    }
+
+    public static boolean checkGuessIgnorePunctuation(String guess, String expected) {
+        String newGuess = keepOnlySpacesAndLetters(guess);
+        String newExpected = keepOnlySpacesAndLetters(expected);
+        return newExpected.equals(newGuess);
+    }
+
+    public static boolean checkGuessIgnorePunctuationIgnoreCase(String guess, String expected) {
+        String newGuess = keepOnlySpacesAndLetters(guess);
+        String newExpected = keepOnlySpacesAndLetters(expected);
+        return newExpected.toLowerCase().equals(newGuess.toLowerCase());
     }
 }

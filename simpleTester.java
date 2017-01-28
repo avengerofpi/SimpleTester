@@ -68,7 +68,9 @@ public class simpleTester {
         
         // Grab the list of properties files from the chosen directory
         File[] propsFileList = propsFileDir.listFiles(propsFileNameFilter);
-        // If there were no property files, exit. If just one property file, use it. Otherwise, ask user to choose.
+        // If there were no property files, exit.
+        // If just one property file, use it.
+        // Otherwise, ask user to choose.
         if ( (propsFileList == null) || ((numPropsFiles = propsFileList.length) < 1) ) {
             errorMsg = "ERROR: No property files found in the chosen directory: " + propsFileDirName;
             System.out.println(errorMsg);

@@ -1,0 +1,13 @@
+During actual test, sometimes pressing Enter allows the blank answer to
+be accepted. Happened at least in a case of the elements_to_atomicWeight
+test:
+        Prompt:    Bromine
+        Guess:     
+
+        Prompt:    Dysprosium
+        Guess:     
+
+        Prompt:    Carbon
+        Guess:     k
+        Incorrect: 6
+

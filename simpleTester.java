@@ -35,11 +35,11 @@ public class simpleTester {
         int index;
         int randIndex;
         int numPropsFiles = 0;
-        String state, capital;
+        String prompt, expected;
         String repeatStr;
         String errorMsg;
         String line;
-        String prompt;
+        String ioPrompt;
         String initialPrompt;
         String failPrompt;
         String failRepeatPrompt;
@@ -121,7 +121,7 @@ public class simpleTester {
         ArrayList<String> successList = new ArrayList<>();
         ArrayList<String> failureList = new ArrayList<>(originalFullTestList);
         final ArrayList<String> trimmedFailureList;
-        ArrayList<String> statesThisRound;
+        ArrayList<String> promptsThisRound;
         
         // Deciding on test size
         final int DEFAULT_TEST_SIZE_MAX = 10;
@@ -168,20 +168,21 @@ public class simpleTester {
                 HelperFunctions.printStringArrayListRandom(failureList, "prompts");
                 HelperFunctions.printValuesFromArrayList(failureList, simpleTesterProps);
                     
-                statesThisRound = new ArrayList<>(failureList);
+                promptsThisRound = new ArrayList<>(failureList);
                 while (size>0) {
                     randIndex = rand.nextInt(size);
-                    state = statesThisRound.remove(randIndex);
-                    capital = simpleTesterProps.getProperty(state);
+                    ioPrompt = promptsThisRound.remove(randIndex);
+                    expected = simpleTesterProps.getProperty(ioPrompt);
         
-                    System.out.println("Prompt:    " + state);
-                    prompt = "Guess:     ";
-                    String guess = HelperFunctions.getTrimmedString(reader, prompt);
-                    if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, capital))
-                        System.out.println("Incorrect: " + capital.toUpperCase());
+                    System.out.println("Prompt:    " + ioPrompt);
+                    ioPrompt = "Guess:     ";
+                    String guess = HelperFunctions.getTrimmedString(reader, ioPrompt);
+
+                    if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, expected))
+                        System.out.println("Incorrect: " + expected.toUpperCase());
                     else {
-                        failureList.remove(state);
-                        successList.add(state);
+                        failureList.remove(ioPrompt);
+                        successList.add(ioPrompt);
                     }
         
                     System.out.println("");
@@ -190,8 +191,8 @@ public class simpleTester {
                 size = failureList.size();
                 if (size>0) {
                     System.out.format("You have %d prompts left to get correct. Wanna play again?%n", size);
-                    prompt = YES_OR_no_PROMPT;
-                    repeatStr = HelperFunctions.getTrimmedString(reader, prompt);
+                    ioPrompt = YES_OR_no_PROMPT;
+                    repeatStr = HelperFunctions.getTrimmedString(reader, ioPrompt);
                     repeat = !repeatStr.matches(NO_REGEX);
                     if (!repeat) {
                         failureList = null;
@@ -200,8 +201,8 @@ public class simpleTester {
                 }
             }
             System.out.println("Do you want to repeat this exam?");
-            prompt = YES_OR_no_PROMPT;
-            repeatStr = HelperFunctions.getTrimmedString(reader, prompt);
+            ioPrompt = YES_OR_no_PROMPT;
+            repeatStr = HelperFunctions.getTrimmedString(reader, ioPrompt);
             repeat = !repeatStr.matches(NO_REGEX);
 
             if (repeat)

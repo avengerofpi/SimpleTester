@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -21,6 +24,8 @@ public class simpleTester {
     
     final static String YES_REGEX = "[yY]([eE][sS])?";
     final static String  NO_REGEX = "[nN][oO]?";
+    final static String yes_OR_NO_PROMPT = "  yes or No: ";
+    final static String YES_OR_no_PROMPT = "  Yes or no: ";
     public static void main(String[] args) throws FileNotFoundException, IOException {
         // Setup a random number generator for later use
         Random rand = new Random();
@@ -36,6 +41,11 @@ public class simpleTester {
         String state, capital;
         String repeatStr;
         String errorMsg;
+        String line;
+        String prompt;
+        String initialPrompt;
+        String failPrompt;
+        String failRepeatPrompt;
         boolean repeat;
 
         // Choose the properties file to use for the test
@@ -59,7 +69,8 @@ public class simpleTester {
         
         // Choose how to interact with the user (e.g., using java.util.Scanner)
         // This will need to be closed!
-        Scanner reader = new Scanner(System.in);
+        //Scanner reader = new Scanner(System.in);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         
         // Grab the list of properties files from the chosen directory
         File[] propsFileList = propsFileDir.listFiles(propsFileNameFilter);
@@ -87,14 +98,14 @@ public class simpleTester {
                 //System.out.println("  " + (i+1) + ": " + filename);
                 System.out.format("  %2d: %s%n", i+1, filename);
             }
-            System.out.print("Choose the number for the test you want to take (defaults to 1): ");
-            if (reader.hasNextInt()) {
-                index = reader.nextInt();
-                reader.nextLine(); // skip the remainder of the current input line (including the newline char)
-            } else
-                index = 1;
-            if (index < 1 || index > numPropsFiles)
-                index = 1;
+            // Get index
+            initialPrompt = "Choose the number for the test you want to take: ";
+            failRepeatPrompt = "Invalid input. Try again: ";
+            index = HelperFunctions.getInt(reader, initialPrompt, failRepeatPrompt);
+            while (index < 1 || index > numPropsFiles) {
+                index = HelperFunctions.getInt(reader, failRepeatPrompt, failRepeatPrompt);
+            }
+            
             propsFile = propsFileArrayList.get(index-1);
             System.out.println(); // Add a blank line
         }
@@ -125,19 +136,14 @@ public class simpleTester {
         if (DEFAULT_TEST_SIZE_MAX < testSize) {
             System.out.println("There are " + testSize + " prompts to test.");
             System.out.println("Do you want to choose a smaller number for this test?");
-            System.out.print("  Yes or no: ");
-            String choice = reader.nextLine();
+            String choice = HelperFunctions.getTrimmedString(reader, YES_OR_no_PROMPT);
             System.out.println(); // Add a blank line
             if (!choice.toLowerCase().matches(NO_REGEX)) {
-                System.out.print("How large a list do you want (defaults to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ");
-                try {
-                    testSize = reader.nextInt();
-                    reader.nextLine(); // skip the remainder of the current input line (including the newline char)
-                    if ( (testSize < 1) || (testSize > originalFullTestSize) )
-                        testSize = DEFAULT_TEST_SIZE_MAX;
-                } catch (InputMismatchException e) {
-                    testSize = DEFAULT_TEST_SIZE_MAX;
-                }
+
+                // Get index
+                initialPrompt = "How large a list do you want (defaults to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ";
+                failPrompt = "Invalid choice. Going with default value. ";
+                testSize = HelperFunctions.getIntWithDefault(reader, initialPrompt, failPrompt, DEFAULT_TEST_SIZE_MAX);
             }
             System.out.println(); // Add a blank line
         }
@@ -175,8 +181,8 @@ public class simpleTester {
                     capital = simpleTesterProps.getProperty(state);
         
                     System.out.println("Prompt:    " + state);
-                    System.out.print(  "Guess:     ");
-                    String guess = reader.nextLine();
+                    prompt = "Guess:     ";
+                    String guess = HelperFunctions.getTrimmedString(reader, prompt);
                     //if (!guess.toLowerCase().matches(capital.toLowerCase()))
                     if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, capital))
                         System.out.println("Incorrect: " + capital.toUpperCase());
@@ -191,20 +197,20 @@ public class simpleTester {
                 size = failureList.size();
                 if (size>0) {
                     System.out.format("You have %d prompts left to get correct. Wanna play again?%n", size);
-                    System.out.print("  Yes or no: ");
-                    repeatStr = reader.nextLine();
+                    prompt = YES_OR_no_PROMPT;
+                    repeatStr = HelperFunctions.getTrimmedString(reader, prompt);
                     repeat = !repeatStr.matches(NO_REGEX);
                     if (!repeat) {
                         failureList = null;
                         System.out.println();
-                        System.out.format("Matched '%s': '%s'%n", NO_REGEX, repeatStr);
+                        //System.out.format("Matched '%s': '%s'%n", NO_REGEX, repeatStr);
                         System.out.println();
                     }
                 }
             }
             System.out.println("Do you want to repeat this exam?");
-            System.out.print("  Yes or no: ");
-            repeatStr = reader.nextLine();
+            prompt = YES_OR_no_PROMPT;
+            repeatStr = HelperFunctions.getTrimmedString(reader, prompt);
             repeat = !repeatStr.matches(NO_REGEX);
 
             if (repeat)
@@ -286,8 +292,8 @@ class HelperFunctions {
         return ret.toString();
     }
 
-    public static String keepOnlySpacesAndLetters(String in) {
-        final String UNWANTED_REGEX = "[^ a-zA-Z]";
+    public static String keepOnlyAlphaNumeric(String in) {
+        final String UNWANTED_REGEX = "[^ a-zA-Z0-9]";
         Matcher matcher = Pattern.compile(UNWANTED_REGEX).matcher(in);
         ArrayList<Integer> indexList = new ArrayList<>();
         while (matcher.find())
@@ -307,14 +313,49 @@ class HelperFunctions {
     }
 
     public static boolean checkGuessIgnorePunctuation(String guess, String expected) {
-        String newGuess = keepOnlySpacesAndLetters(guess);
-        String newExpected = keepOnlySpacesAndLetters(expected);
+        String newGuess = keepOnlyAlphaNumeric(guess);
+        String newExpected = keepOnlyAlphaNumeric(expected);
         return newExpected.equals(newGuess);
     }
 
     public static boolean checkGuessIgnorePunctuationIgnoreCase(String guess, String expected) {
-        String newGuess = keepOnlySpacesAndLetters(guess);
-        String newExpected = keepOnlySpacesAndLetters(expected);
+        String newGuess = keepOnlyAlphaNumeric(guess);
+        String newExpected = keepOnlyAlphaNumeric(expected);
         return newExpected.toLowerCase().equals(newGuess.toLowerCase());
+    }
+
+    public static int getInt(BufferedReader reader, String initialPrompt, String failRepeatPrompt) throws IOException {
+        boolean done = false;
+        String line;
+        int n = 0;
+        System.out.print(initialPrompt);
+        do {
+            try {
+                line = reader.readLine().trim();
+                n = Integer.decode(line);
+                done = true;
+            } catch (NumberFormatException e) {
+                System.out.print(failRepeatPrompt);
+            }
+        } while (!done);
+        return n;
+    }
+
+    public static int getIntWithDefault(BufferedReader reader, String initialPrompt, String failPrompt, int defaultInt) throws IOException {
+        String line;
+        int n = defaultInt;
+        System.out.print(initialPrompt);
+        try {
+            line = reader.readLine().trim();
+            n = Integer.decode(line);
+        } catch (NumberFormatException e) {
+            System.out.println(failPrompt);
+        }
+        return n;
+    }
+
+    public static String getTrimmedString(BufferedReader reader, String prompt) throws IOException {
+        System.out.print(prompt);
+        return reader.readLine().trim();
     }
 }

@@ -30,9 +30,6 @@ public class simpleTester {
         // Setup a random number generator for later use
         Random rand = new Random();
 
-        // Easy access to print and println
-        
-        
         // Variables for interacting with the testing list(s)
         int size;
         int index;
@@ -56,8 +53,6 @@ public class simpleTester {
             @Override
             public boolean accept(File dir, String name) { return name.matches(".*\\.props"); }
         };
-        //propsFileName = "/home/cory/git/simpleTester/simpleTester.props";
-        //propsFileName = "/home/cory/git/simpleTester/countryCapitals.props";
 
         // Make sure the chosen directory for test property files exists
         File propsFileDir = new File(propsFileDirName);
@@ -69,7 +64,6 @@ public class simpleTester {
         
         // Choose how to interact with the user (e.g., using java.util.Scanner)
         // This will need to be closed!
-        //Scanner reader = new Scanner(System.in);
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         
         // Grab the list of properties files from the chosen directory
@@ -183,7 +177,6 @@ public class simpleTester {
                     System.out.println("Prompt:    " + state);
                     prompt = "Guess:     ";
                     String guess = HelperFunctions.getTrimmedString(reader, prompt);
-                    //if (!guess.toLowerCase().matches(capital.toLowerCase()))
                     if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, capital))
                         System.out.println("Incorrect: " + capital.toUpperCase());
                     else {
@@ -202,8 +195,6 @@ public class simpleTester {
                     repeat = !repeatStr.matches(NO_REGEX);
                     if (!repeat) {
                         failureList = null;
-                        System.out.println();
-                        //System.out.format("Matched '%s': '%s'%n", NO_REGEX, repeatStr);
                         System.out.println();
                     }
                 }

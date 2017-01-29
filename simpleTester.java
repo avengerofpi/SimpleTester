@@ -140,13 +140,14 @@ public class simpleTester {
                 initialPrompt = "How large a list do you want (defaults to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ";
                 failPrompt = "Invalid choice. Going with default value. ";
                 testSize = HelperFunctions.getIntWithDefault(reader, initialPrompt, failPrompt, DEFAULT_TEST_SIZE_MAX);
+
+                if ( (testSize < 1) || (originalFullTestSize < testSize) )
+                    testSize = DEFAULT_TEST_SIZE_MAX;
+
+                System.out.format("We will use a test size of %d%n", testSize);
             }
             System.out.println(); // Add a blank line
         }
-
-        // Make sure testSize is valid
-        errorMsg = "Somehow an invalid testSize (" + testSize + ") has been selected. Should be in the range 1.." + originalFullTestSize;
-        assert ( (testSize >= 1) && (testSize <= originalFullTestSize) ) : errorMsg;
 
         // Grab random entries to test if not testing the whole set
         if (testSize == originalFullTestSize)

@@ -290,13 +290,8 @@ class HelperFunctions {
     public static String keepOnlyAlphaNumeric(String in) {
         final String UNWANTED_REGEX = "[^ a-zA-Z0-9]";
         Matcher matcher = Pattern.compile(UNWANTED_REGEX).matcher(in);
-        ArrayList<Integer> indexList = new ArrayList<>();
-        while (matcher.find())
-            indexList.add(0, matcher.regionStart()); // creating index list in reverse order
-        StringBuilder out = new StringBuilder(in);
-        for (int index : indexList)
-            out.deleteCharAt(index);
-        return out.toString();
+        String out = matcher.replaceAll("");
+        return out;
     }
 
     public static boolean checkGuess(String guess, String expected) {

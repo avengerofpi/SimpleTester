@@ -177,8 +177,8 @@ public class simpleTester {
                     prompt = promptsThisRound.remove(randIndex);
                     expected = simpleTesterProps.getProperty(prompt);
         
-                    System.out.println("Prompt:    " + prompt);
-                    ioPrompt = "Guess:     ";
+                    System.out.println("Prompt: " + prompt);
+                    ioPrompt = "Guess:  ";
                     String guess = HelperFunctions.getTrimmedString(reader, ioPrompt);
 
                     if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, expected))

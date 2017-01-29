@@ -173,18 +173,18 @@ public class simpleTester {
                 promptsThisRound = new ArrayList<>(failureList);
                 while (size>0) {
                     randIndex = rand.nextInt(size);
-                    ioPrompt = promptsThisRound.remove(randIndex);
-                    expected = simpleTesterProps.getProperty(ioPrompt);
+                    prompt = promptsThisRound.remove(randIndex);
+                    expected = simpleTesterProps.getProperty(prompt);
         
-                    System.out.println("Prompt:    " + ioPrompt);
+                    System.out.println("Prompt:    " + prompt);
                     ioPrompt = "Guess:     ";
                     String guess = HelperFunctions.getTrimmedString(reader, ioPrompt);
 
                     if (!HelperFunctions.checkGuessIgnorePunctuationIgnoreCase(guess, expected))
                         System.out.println("Incorrect: " + expected.toUpperCase());
                     else {
-                        failureList.remove(ioPrompt);
-                        successList.add(ioPrompt);
+                        failureList.remove(prompt);
+                        successList.add(prompt);
                     }
         
                     System.out.println("");

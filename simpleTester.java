@@ -312,6 +312,7 @@ class HelperFunctions {
         String newGuess = keepOnlyAlphaNumeric(guess);
         String newExpected = keepOnlyAlphaNumeric(expected);
         return newExpected.toLowerCase().equals(newGuess.toLowerCase());
+        // lakdjal asdja lkd
     }
 
     public static int getInt(BufferedReader reader, String initialPrompt, String failRepeatPrompt) throws IOException {

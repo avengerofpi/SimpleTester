@@ -133,21 +133,24 @@ public class simpleTester {
             System.out.println("There are " + testSize + " prompts to test.");
             System.out.println("Do you want to choose a smaller number for this test?");
             String choice = HelperFunctions.getTrimmedString(reader, YES_OR_no_PROMPT);
-            System.out.println(); // Add a blank line
             if (!choice.toLowerCase().matches(NO_REGEX)) {
+                System.out.println(); // Add a blank line
 
                 // Get index
                 initialPrompt = "How large a list do you want (defaults to " + DEFAULT_TEST_SIZE_MAX + " on invalid choice): ";
                 failPrompt = "Invalid choice. Going with default value. ";
                 testSize = HelperFunctions.getIntWithDefault(reader, initialPrompt, failPrompt, DEFAULT_TEST_SIZE_MAX);
 
-                if ( (testSize < 1) || (originalFullTestSize < testSize) )
+                if ( (testSize < 1) || (originalFullTestSize < testSize) ) {
+                    // need to aggregate this invalid input catch with that from the above function call
+                    System.out.println(failPrompt);
                     testSize = DEFAULT_TEST_SIZE_MAX;
-
-                System.out.format("We will use a test size of %d%n", testSize);
+                }
             }
-            System.out.println(); // Add a blank line
         }
+        System.out.println(); // Add a blank line
+        System.out.format("We will use a test size of %d%n", testSize);
+        System.out.println(); // Add a blank line
 
         // Grab random entries to test if not testing the whole set
         if (testSize == originalFullTestSize)
